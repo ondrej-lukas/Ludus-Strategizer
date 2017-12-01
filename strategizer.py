@@ -19,8 +19,11 @@
 # Sebastian Garcia  eldraco@gmail.com
 # Ondrej Lukas      ondrej.lukas95@gmail.com    
 
-# Description
-# A program that analyzes the firewall settings and opens honeypots based on the game theoretical strategy. 
+# Description:
+# Tool for applying GT strategy in Omnia Turris routers.
+# It works with several types of honeypots which are distributed according to strategy computed in module strategy_genetator.
+# NOTICE: Ports used as a target for honeypot cannot be used by a user!
+# Part of LUDUS project
 
 import strategy_generator as generator
 import argparse
@@ -28,10 +31,47 @@ import json
 import subprocess
 
 
-def open_HP_on_port(port):
-	print "Opening HP in port: {}".format(port)
-	result = subprocess.Popen('bash honeypot.sh -e -p '+str(port), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
-    print "Done"
+def open_honeypot(port, known_honeypots, protocol='tcp'):
+    """If possible, enables Turris honeypot. Else uses TARPIT target in iptables"""
+    if port in known_honeypots:
+        #ssh HP
+        if port == '22':
+            command = '/etc/init.d/mitmproxy_wrapper start'
+        #minipot
+        else:
+            command = 'uci del_list ucollect.fakes.enable='+port+protocol
+    #no, use TARPIT
+    else:
+        command = 'iptables -I zone_wan_input 6 -p tcp --dport %s -j TARPIT' % port
+    subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+    print "\tOpening HP in port: {}".format(port)
+
+def close_honeypot(port,known_honeypots, protocol='tcp'):
+    """Close honeypot according to its time"""
+    if port in known_honeypots:
+            #ssh HP
+            if port == '22':
+                command = '/etc/init.d/mitmproxy_wrapper stop'
+            #minipot
+            else:
+                command = 'uci del_list ucollect.fakes.disable='+port+protocol
+        #no, use TARPIT
+    else:
+        command = 'iptables -D zone_wan_input 6'
+    subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+    print "\tClosing HP in port: {}".format(port)
+
+def get_strategy(ports, active_honeypots, path_to_strategy):   
+    #build the string
+    ports_s = ''
+    for item in ports:
+        ports_s += (str(item)+',')
+    #get rid of the last comma
+    ports_s = ports_s[0:-1]
+    
+    #get strategy
+    suggested_honeypots = generator.get_strategy(ports_s,path_to_strategy)
+    return suggested_honeypots
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tells you which honeypot port to open given your production ports.')
