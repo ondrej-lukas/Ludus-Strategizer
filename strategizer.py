@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 #  Copyright (C) 2017  Sebastian Garcia, Ondrej Lukas
 #
@@ -19,11 +20,7 @@
 # Sebastian Garcia  eldraco@gmail.com
 # Ondrej Lukas      ondrej.lukas95@gmail.com    
 
-# Description:
-# Tool for applying GT strategy in Omnia Turris routers.
-# It works with several types of honeypots which are distributed according to strategy computed in module strategy_genetator.
-# NOTICE: Ports used as a target for honeypot cannot be used by a user!
-# Part of LUDUS project
+# Description. 
 
 import strategy_generator as generator
 import argparse
@@ -32,7 +29,6 @@ import subprocess
 
 
 def open_honeypot(port, known_honeypots, protocol='tcp'):
-    """If possible, enables Turris honeypot. Else uses TARPIT target in iptables"""
     if port in known_honeypots:
         #ssh HP
         if port == '22':
@@ -47,7 +43,6 @@ def open_honeypot(port, known_honeypots, protocol='tcp'):
     print "\tOpening HP in port: {}".format(port)
 
 def close_honeypot(port,known_honeypots, protocol='tcp'):
-    """Close honeypot according to its time"""
     if port in known_honeypots:
             #ssh HP
             if port == '22':
@@ -61,7 +56,11 @@ def close_honeypot(port,known_honeypots, protocol='tcp'):
     subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
     print "\tClosing HP in port: {}".format(port)
 
-def get_strategy(ports, active_honeypots, path_to_strategy):   
+def get_strategy(ports, active_honeypots, path_to_strategy):
+    #print "\tUser is using port(s): " + str(ports)
+    #print "\tActive HP: {}".format(active_honeypots)
+    #get ports for HP from strategy
+    
     #build the string
     ports_s = ''
     for item in ports:
@@ -74,7 +73,7 @@ def get_strategy(ports, active_honeypots, path_to_strategy):
     return suggested_honeypots
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Tells you which honeypot port to open given your production ports.')
+    """parser = argparse.ArgumentParser(description='Tells you which honeypot port to open given your production ports.')
 
     parser.add_argument('-f', '--file', type=str, help='Strategy file')
     parser.add_argument('-d', '--debug', type=int, help='Debug. From 0 to 10')
@@ -104,8 +103,5 @@ if __name__ == '__main__':
 	    for port in suggested_honeypots:
 	    	open_HP_on_port(port)
     except TypeError:
-	pass
-
-
-
-
+	pass"""
+    print get_strategy(['80'])
