@@ -56,7 +56,6 @@ class defender():
         #print 'Production ports: {}'.format(self.defenders_actions.keys())
         #print 'Honeypot ports: {}'.format(self.defenders_actions.values())
 
-   
     def get_honeypot_ports(self, production_ports,debug=0):
         """
         Get the production ports and return the honeyport port according to the probabilities 
@@ -79,13 +78,9 @@ class defender():
                     return honeypot_tuple[0]
             # If there is no match, is the last one
             return sorted_current_honeypot_dict[-1][0]
-
-
         except KeyError:
-            print 'We never saw that combination of production ports. Sorry we can not help you now.'
-
-        
-
+            print production_ports
+            print 'We never saw that combination of production ports {}. Sorry we can not help you now.'.format(production_ports)
 
 def read_data(file, NewDefender, debug=0):
     f = open(file)
